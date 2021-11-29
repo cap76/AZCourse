@@ -258,7 +258,7 @@ library("arm")
 ```
 
 ```
-## Working directory is /Users/christopherpenfold/Desktop/AZMachineLearning/intro-machine-learning
+## Working directory is /Users/christopherpenfold/Desktop/AZMachineLearning/AZCourse
 ```
 
 ```r
