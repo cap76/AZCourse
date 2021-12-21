@@ -68,7 +68,7 @@ use_python("Python3.9")
 install.packages("keras")
 ```
 
-At this stage you should now be ready to run Keras in R. For optional use of other (Python specific) packages, you should install DeepExplain, which can be done via:
+At this stage you should now be ready to run Keras in R. For optional use of other (Python specific) packages that allow one to visualise activations to specific outputs, you should install [DeepExplain](https://github.com/marcoancona/DeepExplain), which can be done via:
 
 ```{r, eval=FALSE}
 python3.9 -m pip install -e git+https://github.com/marcoancona/DeepExplain.git#egg=deepexplain
