@@ -19,6 +19,8 @@ Within this section our output variable will typically be the expression level o
 
 ```r
 D <- read.csv(file = "data/Arabidopsis/Arabidopsis_Botrytis_transpose_3.csv", header = TRUE, sep = ",", row.names=1)
+
+D <- read.csv(file = "data/Arabidopsis/Arabidopsis_Botrytis_pred_transpose_3.csv", header = TRUE, sep = ",", row.names=1)
 ```
 
 We can also extract out the names of the variables (gene names), and the unique vector of measurment times. For the control experiment this would look like:
@@ -26,13 +28,13 @@ We can also extract out the names of the variables (gene names), and the unique 
 
 ```r
 genenames <- colnames(D)
-Xs <- D$Time[1:24]
+Xs <- D$Time[1:96]
 ```
 whilst for the treatment, it would be
 
 ```r
 genenames <- colnames(D)
-Xs2 <- D$Time[25:nrow(D)]
+Xs2 <- D$Time[97:nrow(D)]
 ```
 
 Exercise 1.1. Plot the gene expression profiles to familiarise yourself with the data. No, really, plot the data. This is always the first thing you should be doing with your datasets - look at them. The general aim of this module is to give you hands on experience with linear and logistic regression and cover a number of other concepts from machine learning. The main points are:
@@ -49,19 +51,20 @@ Exercise 1.1. Plot the gene expression profiles to familiarise yourself with the
 
 ### Linear regression {#linear-regression}
 
-Now that we have an idea about what our dataset is, we can start to do something with it. Here we have a time series (a number of time-series, in fact), so we may, at some point, want to develop a models of how specific genes are changing over time: this would allow us to predict what gene expression might be doing at some point in the futurer (forecasting) or uncover something about the physical nature of the system i.e., what kind of function best describes the behaviour. Recall that one of the simplest forms of regression, linear regression, assumes that the variable of interest, $y$, depends on an explanatory variable, $x$, via:
+The plant dataset consists of 8 time series (4 replicated time series from a control "mock infection" and $4$ time series from an Botrytis-inoculated plant). Each time series contains 24 time points, over $48$ hours at $2$ hourly intervals. Now that we have an idea about what our dataset is, we can start to do something with it. Here we have a time series (a number of time-series, in fact), so we may, at some point, want to develop a models of how specific genes are changing over time: this would allow us to predict what gene expression might be doing at some point in the futurer (forecasting) or uncover something about the physical nature of the system i.e., what kind of function best describes the behaviour. Recall that one of the simplest forms of regression, linear regression, assumes that the variable of interest, $y$, depends on an explanatory variable, $x$, via:
 
 $y = m x + c.$
 
 For a typical set of data, we have a vector of observations, $\mathbf{y} = (y_1,y_2,\ldots,y_n)$ with a corresponding set of explanatory variables. For now we can assume that the explanatory variable is scalar, for example time (in hours), such that we have a set of observations, $\mathbf{X} = (t_1,t_2,\ldots,t_n)$. Using linear regression we aim to infer the parameters $m$ and $c$, which will tell us something about the relationship between the two variables, and allow us to make predictions at a new set of locations, $\mathbf{X}*$.
 
-Within {R}, linear regression can be implemented via the {lm} function. In the example below, we perform linear regression for the gene expression of AT2G28890 as a function of time, using the infection time series only (hence we use only the first $24$ datapoints):
+Within {R}, linear regression can be implemented via the {lm} function. In the example below, we perform linear regression for the gene expression of AT2G28890 as a function of time, using $3$ of the $4$ infection time series (saving the fourth for validation):
 
 
 ```r
-linmod <- lm(AT2G28890~Time, data = D[25:nrow(D),])
+linmod <- lm(AT2G28890~Time, data = D[4*24 +1:7*24,])
 ```
-within this snippet of code, the {lm} function has analytically identified the gradient and offset ($m$ and $c$ parameters) based upon all 24 time points, and we can take a look at those parameters via {linmod$oefficients}. In general, it is not a very good idea to infer parameters using all of the data. Doing so would leave no way to evaluate for overfitting. Ideally, we wish to partition the dataset into a training set, and an evaluation set, with parameters evaluated on the training set, and model performance summarised over the evaluation set. We can of course partition this dataset manually, or use a package to do so. In the previous workshops we saw how {caret} machine learning wrapper could be used to easily specify various partitions of the dataset. Linear regression is implemented within the {caret} package, allowing us to make use of these utilities. In fact, within {caret}, linear regression is performed by calling the function {lm}.
+
+within this snippet of code, the {lm} function has analytically identified the gradient and offset ($m$ and $c$ parameters) based upon all 24 time points (4 replicates), and we can take a look at those parameters via {linmod$oefficients}. In general, it is not a very good idea to infer parameters using all of the data. Doing so would leave no way to evaluate for overfitting. Ideally, we wish to partition the dataset into a training set, and an evaluation set, with parameters evaluated on the training set, and model performance summarised over the evaluation set. We can of course partition this dataset manually, or use a package to do so. In the previous workshops we saw how {caret} machine learning wrapper could be used to easily specify various partitions of the dataset. Linear regression is implemented within the {caret} package, allowing us to make use of these utilities. In fact, within {caret}, linear regression is performed by calling the function {lm}.
 
 In the example, below, we perform linear regression for gene AT2G28890, and predict the expression pattern for that gene using the {predict} function:
 
@@ -93,7 +96,10 @@ set.seed(1)
 
 geneindex <- which(genenames=="AT2G28890")
 
-lrfit <- train(y~., data=data.frame(x=Xs,y=D[25:nrow(D),geneindex]), method = "lm")
+startind <- (4*24)+1
+endind <- 7*24
+
+lrfit <- train(y~., data=data.frame(x=D[startind:endind,1],y=D[startind:endind,geneindex] ), method = "lm")
 predictedValues<-predict(lrfit)
 ```
 
@@ -110,45 +116,66 @@ summary(lrfit)
 ## lm(formula = .outcome ~ ., data = dat)
 ## 
 ## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -0.77349 -0.17045 -0.01839  0.15795  0.63098 
+##     Min      1Q  Median      3Q     Max 
+## -3.3862 -0.3787  0.0814  0.4267  1.7164 
 ## 
 ## Coefficients:
-##             Estimate Std. Error t value Pr(>|t|)    
-## (Intercept) 10.14010    0.13975   72.56  < 2e-16 ***
-## x           -0.04997    0.00489  -10.22 8.14e-10 ***
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 10.380430   0.201695  51.466  < 2e-16 ***
+## x           -0.062616   0.007058  -8.872 4.54e-13 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 0.3317 on 22 degrees of freedom
-## Multiple R-squared:  0.826,	Adjusted R-squared:  0.8181 
-## F-statistic: 104.4 on 1 and 22 DF,  p-value: 8.136e-10
+## Residual standard error: 0.8291 on 70 degrees of freedom
+## Multiple R-squared:  0.5293,	Adjusted R-squared:  0.5226 
+## F-statistic: 78.71 on 1 and 70 DF,  p-value: 4.543e-13
 ```
 
-Conveniently, in cases where we do not specify a split in the data, {caret} will split these by default settings, and can look at various metrics on the held out data in {lrfit$results}. We can make predictions at new points (for example if we are interested in forecasting at some time in the future) by specifying a new set of time points over which to make a prediciton:
+Conveniently, in cases where we do not specify a split in the data, {caret} will split these by default settings, and can look at various metrics on the held out data in {lrfit$results}. We can make predictions at new points (for example if we are interested in forecasting at some time in the future) by specifying a new set of time points over which to make a prediction:
 
 
 ```r
-newX <- c(49,50,51,52,53,54)
+newX <- seq(0,48,by=0.5)
 forecastValues<-predict(lrfit,newdata = data.frame(x=newX) )
+
+plot(D[startind:endind,1],D[startind:endind,geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2, max(D[,geneindex]+0.2)),main=genenames[geneindex])
+points(newX,forecastValues,type="l",col="black")
 ```
 
-Let's also fit a linear model to the control dataset, and plot the inferred results alongside the observation data for both fitted models:
+<img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+
+We can also take a look at predictions in the held-out $4$th replicate:
 
 
 ```r
-lrfit2 <- train(y~., data=data.frame(x=Xs,y=D[1:24,geneindex]), method = "lm")
-predictedValues2 <- predict(lrfit2)
+newX <- D[169:192,1]
+forecastValues<-predict(lrfit,newdata = data.frame(x=newX) )
+residuals <- forecastValues - D[169:192,geneindex]
 
-plot(Xs,D[25:nrow(D),geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2, max(D[,geneindex]+0.2)),main=genenames[geneindex])
-points(Xs,D[1:24,geneindex],type="p",col="red")
-points(Xs,predictedValues,type="l",col="black")
-points(Xs,predictedValues2,type="l",col="red")
+plot(residuals, type="p",col="black",main=genenames[geneindex])
 ```
 
 <img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-8-1.png" width="672" />
 
-Whilst the above model appeared to do reasonably well at capturing the general trends in the dataset, if we take a closer look at the control data (in red), you may notice that, visually, there appears to be more structure to the data than indicated by the model fit. Indeed, if we look AT2G28890 up on [CircadianNET](http://viridiplantae.ibvf.csic.es/circadiaNet/genes/atha/AT2G28890.html), we will see it is likely circadian in nature ($p<5\times10^{-5}$) suggesting there may be some rhythmicity to it. To better accommodate the complex nature of this data we may need something more complicated. 
+Let's also fit a linear model to the control dataset (again only using 3 datasets), and plot the inferred results alongside the observation data for both fitted models:
+
+
+```r
+newX <- seq(0,48,by=0.5)
+
+lrfit2 <- train(y~., data=data.frame(x=D[1:72,1],y=D[1:72,geneindex]), method = "lm")
+predictedValues2 <- predict(lrfit2, newdata = data.frame(x=newX))
+predictedValues<-predict(lrfit,newdata = data.frame(x=newX) )
+
+plot(D[1:72,1],D[1:72,geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2, max(D[,geneindex]+0.2)),main=genenames[geneindex])
+points(D[97:168,1],D[97:168,geneindex],type="p",col="red")
+points(newX,predictedValues,type="l",col="red")
+points(newX,predictedValues2,type="l",col="black")
+```
+
+<img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+
+Whilst the above model appeared to do reasonably well at capturing the general trends in the dataset, if we take a closer look at the control data (in red), you may notice that, visually, there appears to be more structure to the data than indicated by the model fit. One thing we can do is take a look at the residuals fo each model: if there is structure in the residuals, it would suggest the model is not capturing the full richness of the model. Indeed, if we look AT2G28890 up on [CircadianNET](http://viridiplantae.ibvf.csic.es/circadiaNet/genes/atha/AT2G28890.html), we will see it is likely circadian in nature ($p<5\times10^{-5}$) suggesting there may be some rhythmicity to it. To better accommodate the complex nature of this data we may need something more complicated. 
 
 ### Polynomial regression
 
@@ -164,23 +191,29 @@ where $m = [m_1,\ldots,m_n,c]$ are the free parameters. Within {R} we can infer 
  
 
 ```r
-lrfit3 <- lm(y~poly(x,degree=3), data=data.frame(x=D[1:24,1],y=D[1:24,geneindex]))
+lrfit3 <- lm(y~poly(x,degree=3), data=data.frame(x=D[1:72,1],y=D[1:72,geneindex]))
 ```
  
 We can do this within {caret}: in the snippet, below, we fit $3$rd order polynomials to the control and infected datasets, and plot the fits alongside the data.
  
 
 ```r
-lrfit3 <- train(y~poly(x,degree=3), data=data.frame(x=D[1:24,1],y=D[1:24,geneindex]), method = "lm")
-lrfit4 <- train(y~poly(x,degree=3), data=data.frame(x=D[25:nrow(D),1],y=D[25:nrow(D),geneindex]), method = "lm")
+lrfit3 <- train(y~poly(x,degree=3), data=data.frame(x=D[1:72,1],y=D[1:72,geneindex]), method = "lm")
+lrfit4 <- train(y~poly(x,degree=3), data=data.frame(x=D[97:168,1],y=D[97:168,geneindex]), method = "lm")
 
-plot(Xs,D[25:nrow(D),geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2,max(D[,geneindex]+0.2)),main=genenames[geneindex])
-points(Xs,D[1:24,geneindex],type="p",col="red")
-lines(Xs,fitted(lrfit3),type="l",col="red")
-lines(Xs,fitted(lrfit4),type="l",col="black")
+plot(D[97:168,1],D[97:168,geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2,max(D[,geneindex]+0.2)),main=genenames[geneindex])
+points(D[1:72,1],D[1:72,geneindex],type="p",col="red")
+
+newX <- seq(0,48,by=0.5)
+
+predictedValues<-predict(lrfit3,newdata = data.frame(x=newX) )
+predictedValues2 <- predict(lrfit4, newdata = data.frame(x=newX))
+
+points(newX,predictedValues,type="l",col="red")
+points(newX,predictedValues2,type="l",col="black")
 ```
 
-<img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+<img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-11-1.png" width="672" />
  
 Note that, by eye, the fit appears to be a little better than for the linear regression model. Well, maybe! We can quantify the accuracy of the models by looking at the root-mean-square error (RMSE) on the hold-out data (cross validation), defined as:
 
@@ -198,12 +231,16 @@ In the previous section we explored fitting a polynomial function to the data. R
 
 
 ```r
-lrfit3    <- lm(y~poly(x,degree=4), data=data.frame(x=D[1:24,1],y=D[1:24,geneindex]))
-plot(Xs,D[1:24,geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2, max(D[,geneindex]+0.2)),main=genenames[geneindex])
-lines(Xs,fitted(lrfit3),type="l",col="red")
+lrfit3    <- lm(y~poly(x,degree=4), data=data.frame(x=D[1:72,1],y=D[1:72,geneindex]))
+plot(D[1:72,1],D[1:72,geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2, max(D[,geneindex]+0.2)),main=genenames[geneindex])
+
+newX <- seq(0,48,by=0.5)
+predictedValues<-predict(lrfit3,newdata = data.frame(x=newX) )
+
+lines(newX,predictedValues,type="l",col="red")
 ```
 
-<img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+<img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-12-1.png" width="672" />
 
 It looks reasonable, but how does it compare to the following shown in blue?
 
@@ -214,12 +251,18 @@ lrfit4$coefficients <- lrfit4$coefficients + 0.1*matrix(rnorm(length(lrfit4$coef
 pred1<-predict(lrfit4, data=data.frame(x=D[1:24,1],y=D[1:24,geneindex]))
 
 
-plot(Xs,D[1:24,geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2, max(D[,geneindex]+0.2)),main=genenames[geneindex])
-lines(Xs,fitted(lrfit3),type="l",col="red")
-lines(Xs,pred1,type="l",col="blue")
+plot(D[1:72,1],D[1:72,geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2, max(D[,geneindex]+0.2)),main=genenames[geneindex])
+
+newX <- seq(0,48,by=0.5)
+predictedValues<-predict(lrfit3,newdata = data.frame(x=newX) )
+predictedValues2<-predict(lrfit4,newdata = data.frame(x=newX) )
+
+
+lines(newX,predictedValues,type="l",col="red")
+lines(newX,predictedValues2,type="l",col="blue")
 ```
 
-<img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-12-1.png" width="672" />
+<img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-13-1.png" width="672" />
 
 Our new fit was generated by slightly perturbing the optimised parameters via the addition of a small amount of noise. We can see that the new fit is almost as good, and will have a very similar SSE[^This should give us some intuition on the notion of over-fitting. For example, if we make a small perturbation to the parameters of a simpler model, the function will not change all that much; on the other hand, if we made a small perturbation to the parameters of a more complex polynomial, the function may look drastically different. To explain the data with the more complex model would therefore require very specific sets of parameters]. In general, inferring a single fit to a model is prone to overfitting. A much better approach is to instead fit a distribution over fits. We can generate samples from a linear model using the {coef} function. To do so we must use the {lm} function directly, and not via the {caret} package.
 
@@ -258,11 +301,11 @@ library("arm")
 ```
 
 ```
-## Working directory is /Users/christopherpenfold/Desktop/AZMachineLearning/AZCourse
+## Working directory is /Users/christopherpenfold/Desktop/AZMachineLearning/AZCourseV2
 ```
 
 ```r
-lrfit4    <- lm(y~poly(x,degree=4), data=data.frame(x=D[1:24,1],y=D[1:24,geneindex]))
+lrfit4    <- lm(y~poly(x,degree=4), data=data.frame(x=D[1:72,1],y=D[1:72,geneindex]))
 simulate  <- coef(sim(lrfit4))
 paramsamp <- head(simulate,10)
 ```
@@ -271,33 +314,12 @@ This will sample model parameters that are likely to explain the dataset. In thi
 
 
 ```r
-plot(Xs,D[1:24,geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2, max(D[,geneindex]+0.2)),main=genenames[geneindex])
+plot(D[1:72,1],D[1:72,geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2, max(D[,geneindex]+0.2)),main=genenames[geneindex])
 for (i in c(1,2,3,4,5,6,7,8,9,10)){
 lrfit4$coefficients <- paramsamp[i,]
-pred1<-predict(lrfit4, data=data.frame(x=D[1:24,1],y=D[1:24,geneindex]))
-lines(Xs,pred1,type="l",col="red")
+pred1<-predict(lrfit4, newdata = data.frame(x=newX) )
+lines(newX,pred1,type="l",col="red")
 }
-```
-
-<img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-14-1.png" width="672" />
-
-Alternatively, we can visualise the confidence bounds directly:
-
-
-```r
-lrfit4    <- lm(y~poly(x,degree=4), data=data.frame(x=D[1:24,1],y=D[1:24,geneindex]))
-pred1<-predict(lrfit4, interval="predict")
-```
-
-```
-## Warning in predict.lm(lrfit4, interval = "predict"): predictions on current data refer to _future_ responses
-```
-
-```r
-plot(Xs,D[1:24,geneindex],type="p",col="black",ylim=c(min(D[,geneindex])-0.2, max(D[,geneindex]+0.2)),main=genenames[geneindex])
-lines(Xs,pred1[,1],type="l",col="red")
-lines(Xs,pred1[,2],type="l",col="red")
-lines(Xs,pred1[,3],type="l",col="red")
 ```
 
 <img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-15-1.png" width="672" />
@@ -376,7 +398,7 @@ To make things easier, for model evaluation, we will load in a second (related) 
 
 
 ```r
-Dpred <- read.csv(file = "data/Arabidopsis/Arabidopsis_Botrytis_pred_transpose_3.csv", header = TRUE, sep = ",", row.names=1)
+Dpred <- read.csv(file = "data/Arabidopsis/Arabidopsis_Botrytis_transpose_3.csv", header = TRUE, sep = ",", row.names=1)
 
 prob <- predict(mod_fit, newdata=data.frame(x = Dpred$Time, y = as.factor(Dpred$Class)), type="prob")
 pred <- prediction(prob$`1`, as.factor(Dpred$Class))
@@ -431,11 +453,19 @@ genenames[which(aucscore>0.8)]
 ```
 
 ```
-##  [1] "AT1G29990" "AT1G67170" "AT2G21380" "AT2G28890" "AT2G35500" "AT2G45660"
-##  [7] "AT3G09980" "AT3G11590" "AT3G13720" "AT3G25710" "AT3G44720" "AT3G48150"
-## [13] "AT4G00710" "AT4G02150" "AT4G16380" "AT4G19700" "AT4G26450" "AT4G28640"
-## [19] "AT4G34710" "AT4G36970" "AT4G39050" "AT5G11980" "AT5G22630" "AT5G24660"
-## [25] "AT5G43700" "AT5G50010" "AT5G56250"
+##  [1] "AT1G06510" "AT1G13030" "AT1G14920" "AT1G25490" "AT1G29990" "AT1G30860"
+##  [7] "AT1G32230" "AT1G45145" "AT1G54060" "AT1G63860" "AT1G67170" "AT1G69690"
+## [13] "AT2G04740" "AT2G21380" "AT2G27480" "AT2G28890" "AT2G34710" "AT2G35500"
+## [19] "AT2G38750" "AT2G41350" "AT2G44950" "AT2G45660" "AT3G02150" "AT3G06720"
+## [25] "AT3G09630" "AT3G09980" "AT3G11590" "AT3G13720" "AT3G16310" "AT3G21490"
+## [31] "AT3G25710" "AT3G44720" "AT3G48150" "AT3G49570" "AT3G50910" "AT3G54170"
+## [37] "AT3G60600" "AT3G61790" "AT4G00710" "AT4G00980" "AT4G02150" "AT4G04020"
+## [43] "AT4G16380" "AT4G17710" "AT4G19700" "AT4G25200" "AT4G26110" "AT4G26450"
+## [49] "AT4G28640" "AT4G32190" "AT4G32570" "AT4G34710" "AT4G35580" "AT4G36970"
+## [55] "AT4G39050" "AT5G02150" "AT5G11980" "AT5G19480" "AT5G19990" "AT5G20000"
+## [61] "AT5G22630" "AT5G24660" "AT5G25070" "AT5G42980" "AT5G43700" "AT5G50010"
+## [67] "AT5G51110" "AT5G51910" "AT5G56250" "AT5G56290" "AT5G56950" "AT5G57210"
+## [73] "AT5G59670" "AT5G61390" "AT5G66200" "AT5G66560"
 ```
 
 Unsurprisingly, among these genes we see a variety whose proteins are known to be targeted by various pathogen effectors, and are therefore directly implicated in the immune response (Table 1). 
@@ -466,16 +496,16 @@ Let's take a look at what the data looks like. In this case we plot the training
 
 
 ```r
-bestpredictor <- which(aucscore==max(aucscore))
+bestpredictor <- which(aucscore==max(aucscore))[1]
 
 best_mod_fit <- train(y ~., data=data.frame(x = D[,bestpredictor], y = as.factor(D$Class)), family="binomial", method="glm")
 
-plot(D[,bestpredictor],D$Class,xlab=genenames[bestpredictor],ylab="Class")
-lines(seq(min(D[,bestpredictor]),max(D[,bestpredictor]),length=200),predict(best_mod_fit,newdata=data.frame(x = seq(min(D[,bestpredictor]),max(D[,bestpredictor]),length=200)),type="prob")[,2])
+plot(Dpred[,bestpredictor],Dpred$Class,xlab=genenames[bestpredictor],ylab="Class")
+lines(seq(min(Dpred[,bestpredictor]),max(Dpred[,bestpredictor]),length=200),predict(best_mod_fit,newdata=data.frame(x = seq(min(Dpred[,bestpredictor]),max(Dpred[,bestpredictor]),length=200)),type="prob")[,2])
 ```
 
 <img src="09-logistic-regression-gaussian-processes_files/figure-html/unnamed-chunk-21-1.png" width="672" />
-We can see from this plot that the level of AT3G44720 appears to be highly predictive of infection status. When AT3G44720 is highly expressed, its almost certain that the *Botrytis cinerea* has gained a foothold; whether this is causal or not, we cannot say, but it is almost certainly a good marker.  
+We can see from this plot that the level of AT4G26450 appears to be highly predictive of infection status. When AT4G26450 is lowly expressed, its almost certain that the *Botrytis cinerea* has gained a foothold; whether this is causal or not, we cannot say, but it is almost certainly a good marker.  
 
 Linear regression and logistic regression represent useful tools for dissecting relationships among variables, and are frequently used as tools to interpret complex datasets. There are some cases where linear approaches may not work so well, however. To illustrate this we will construct an artificial dataset in which low expression levels of a gene indicates no infection, with moderate levels indicating infection; very high levels of the gene, however, do not indicate infected status, but might only arise artificially, due to e.g., inducible overexpression. For this dataset very high levels are thus labeled as uninfected. Below we construct this *in silico* dataset based loosely on the expression levels of AT3G44720.
 
@@ -484,13 +514,13 @@ Linear regression and logistic regression represent useful tools for dissecting 
 xtrain = D[,bestpredictor] 
 
 ytrain = as.numeric(D$Class)
-ytrain[which(xtrain>12.5)]=0
+ytrain[which(xtrain>11.5)]=0
 ytrain[which(xtrain<10)]=0
 ytrain = as.factor(ytrain)
 
 xpred = Dpred[,bestpredictor] 
 ypred = as.numeric(Dpred$Class)
-ypred[which(xpred>12.5)]=0
+ypred[which(xpred>11.5)]=0
 ypred[which(xpred<10)]=0
 ypred = as.factor(ypred)
 ```
@@ -513,7 +543,7 @@ mod_fit3$results$Accuracy
 ```
 
 ```
-## [1] 0.8360583
+## [1] 0.6575513
 ```
 
 We can see from the plot that the model fit is very poor. However, if we look at the accuracy (printed at the bottom) the result appears to be good. This is due to the skewed number of samples from each class: there are far more uninfected samples than there are infected, which means that if the model predicts uninfected for every instance, it will be correct more than it's incorrect. We can similarly check the result on our test dataset:
@@ -529,7 +559,7 @@ auc
 ```
 
 ```
-## [1] 0.7104377
+## [1] 0.978836
 ```
 
 These results indicates two key issues. Class imbalance can be a particular problem in regression approaches, and it is important to monitor this on a practical level. Things that we can do, depending on the dataset and method, include up-weighting the less frequently sampled class, or discarding more of the dominant class. Other metrics may also be more appropriate that AUC when classes are highly unbalanced, including area under precision-recall curves.

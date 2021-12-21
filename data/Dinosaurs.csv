@@ -1,4 +1,4 @@
-Saurischian,Height (ft),Height (m),Length (ft),Length (m),W (),W (kg),Type
+Dinosaur,Height (ft),Height (m),Length (ft),Length (m),W (lbs),W (kg),Type
 Acrocanthosaurus (top-spined lizard),19,5.8,40,12.2,"6,000","2,722",Saurischian
 Albertosaurus (Alberta lizard),15,4.6,30,9.1,"6,000","2,722",Saurischian
 Allosaurus (other lizard),17,5.2,40,12.2,"4,000","1,814",Saurischian
@@ -39,7 +39,7 @@ Hadrosaurus (bulky lizard),15,4.6,30,9.1,"6,000","2,722",Ornithischian
 Hypsilophodon (high-crested tooth),3,0.9,7.5,2.3,140,64,Ornithischian
 Iguanodon (iguana tooth),18,5.5,30,9.1,"10,000","4,536",Ornithischian
 Kentrosaurus (spiky lizard),5,1.5,17,5.2,"4,000","1,814",Ornithischian
-Lambeosaurus (Lamb's lizard),18,5.5,30,9.1,"14,000","6,350",Ornithischian
+Lambeosaurus (Lambs lizard),18,5.5,30,9.1,"14,000","6,350",Ornithischian
 Nodosaurus (node lizard),6,1.8,18,5.5,"6,000","2,722",Ornithischian
 Ouranosaurus (brave monitor lizard),10,3.1,23,7,"8,000","3,629",Ornithischian
 Pachycephalosaurus (thick-headedlizard),10,3.1,18,5.5,"4,000","1,814",Ornithischian

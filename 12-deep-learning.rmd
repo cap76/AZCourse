@@ -14,15 +14,42 @@ The main ideas to take home from this section are:
 2. There are a limitless variety of architectures that can be built into a neural network. Picking one to use is often arbitrary or *at best* empirically-motivated by previous works.
 3. Some approaches are better suited for specific datasets.
 
-### Constructing Neural Networks with KerasR
+### Installing the R wrapper for Keras
 
-Before we get to our main task, we will first have a go at building simple densely connected Neural Networks (NN) to perform regression. In general the nature of the NN we use will be motivated by the dataset we have and the question we're interested in. As a gentle intoduction, we aim to use NNs to calculate the square root of a number. We first generate training and evaluation dataset. For the training set we generate two arrays, an *input* array, containing a random set of numbers (between $0$ and $100$), and an *output* array, containing the square roots of those numbers (a similar set will be independently generated for the test set):
+Before we get to our main task, we will first have a go at building simple densely connected Neural Networks (NN) to perform regression. In general the nature of the NN we use will be motivated by the dataset we have and the question we're interested in. As a gentle intoduction, we aim to use NNs to calculate the square root of a number. We first generate training and evaluation dataset. For installation instructions of the Tensorflow backend please see Section X. To set the version of Python we will be using we will need to install reticulate:
+
+```{r, eval=F}
+install.packages(reticulate)
+```
+
+In my case, I have installed Tensorflow within Python3.9, and can set R to call this version using reticulate.
+
+```{r}
+library(ggplot2)
+library(reticulate)
+use_python("Python3.9")
+```
+
+If you have not already done so, you can install the keras wrapper for R via:
+
+Once tensorflow is installed and available, should be able to install the keras wrapper for R.
+
+```{r, eval=F}
+install.packages(keras)
+```
+
+We are now ready to begin.
+
+### Regression with Keras
+
+For the training set we generate two arrays, an *input* array, containing a random set of numbers (between $0$ and $100$), and an *output* array, containing the square roots of those numbers (a similar set will be independently generated for the test set):
 
 ```{r}
 library(keras)
 library(jpeg)
 library(grid)
-library(kerasR)
+
+set.seed(12345)
 
 tdims <- 50 #Number of samples to generate
 x <-  runif(tdims, min=0, max=100) #Generate random x in range 0 to 100
@@ -43,12 +70,12 @@ testingY  <- array(0, dim=c(tdims,1))
 testingY[1:tdims,1] <- y
 ```
 
-A user friendly package for *neural networks* is available via [keras](https://keras.io), an application programming interface (API) written in Python, which uses either [theano](http://deeplearning.net/software/theano/) or [tensorflow](https://www.tensorflow.org) as a back-end. An R interface for keras is available in the form of [kerasR](https://cran.r-project.org/web/packages/kerasR/index.html). Before we can use {kerasR} we first need to load the {keras} and {kerasR} libraries in R (prior to this we also have to install pyhton package {keras} and either {theano} or {tensorflow}).
+A user friendly package for *neural networks* is available via [keras](https://keras.io), an application programming interface (API) written in Python, which uses either [theano](http://deeplearning.net/software/theano/) or [tensorflow](https://www.tensorflow.org) as a back-end. An R interface for keras is available in the form of [keras](https://keras.rstudio.com/). Before we can use {keras in R} we first need to load the {keras} library in R (prior to this we also have to install python package {keras} and {tensorflow}).
 
 And so we come to specifying the model itself. Keras has an simple and intuitive way of specifying [layers](https://keras.io/layers/core/) of a neural network, and kerasR makes good use of this. We first initialise the model:
 
 ```{r, eval=FALSE}
-mod <- Sequential()
+model <- keras_model_sequential()
 ```
 
 This tells keras that we're using the Sequential API i.e., a network with the first layer connected to the second, the second to the third and so forth, which distinguishes it from more complex networks possible using the Model API. Once we've specified a sequential model, we can start adding layers to the neural network. 
@@ -56,41 +83,43 @@ This tells keras that we're using the Sequential API i.e., a network with the fi
 A standard layer of neurons, can be specified using the {Dense} command: the first layer of our network must also include the dimension of the input data. So, for example, if our input data was a scalar, we could add an input layer via:
 
 ```{r, eval=FALSE}
-mod$add(Dense(100, input_shape = c(1)))
+model <- keras_model_sequential() %>% 
+  layer_flatten(input_shape = c(1)) 
 ```
 
-We also need to specify the activation function to the next level. This can be done via {Activation()}, so our snippet of code using a Rectified Linear Unit (relu) activation would look something like:
+We also need to specify the activation function to the next level. This can be done via {activation}, so our snippet of code using a Rectified Linear Unit (relu) activation would look something like:
 
 ```{r, eval=FALSE}
-mod$add(Dense(100, input_shape = c(1)))
-mod$add(Activation("relu"))
+model <- keras_model_sequential() %>% 
+  layer_flatten(input_shape = c(1)) %>% 
+  layer_dense(units = 100, activation = "relu")
 ```
 
 This is all we need to specify a single layer of the neural network. We could add another layer of $120$ neurons via:
 
 ```{r, eval=FALSE}
-mod$add(Dense(120))
-mod$add(Activation("relu"))
+model <- keras_model_sequential() %>% 
+  layer_flatten(input_shape = c(1)) %>% 
+  layer_dense(units = 100, activation = "relu") %>% 
+  layer_dense(units = 120, activation = "relu")
 ```
 
 Finally, we should add the output neurons. The number of output neurons will differ, but should match the size of the output we're aiming to predict. In this section we have one output, a scalar representing the square root of the input, so will have a {Dense(1)} output. The final activation function also depends on the nature of our data. If, for example, we're doing regression, we can explicitly specify a {linear} activation function. Our final model would look like:
 
-```{r}
-mod <- Sequential()
-mod$add(Dense(100, input_shape = c(1)))
-mod$add(Activation("relu"))
-mod$add(Dense(120))
-mod$add(Activation("relu"))
-mod$add(Dense(1))
-mod$add(Activation("linear"))
+```{r, eval=FALSE}
+model <- keras_model_sequential() %>% 
+  layer_flatten(input_shape = c(1)) %>% 
+  layer_dense(units = 100, activation = "relu") %>% 
+  layer_dense(units = 120, activation = "relu") %>% 
+  layer_dense(1, activation = "linear")
 ```
 
 That's it. Simple!
 
-Next, we can print a summary of the network, to visualise how many parameters it has and other aspects:
+Next, we can print a summary of the network, to visualise how many parameters it has:
 
-```{r}
-mod
+```{r, eval=FALSE}
+summary(model)
 ```
 
 Before we can perform inference, we need to compile and run the model. In this case we need to specify three things:
@@ -103,32 +132,66 @@ Before we can perform inference, we need to compile and run the model. In this c
 
 We can compile our model using {keras_compile}:
 
-```{r}
-keras_compile(mod,  loss = 'mean_squared_error', metrics = c('mean_squared_error'), optimizer = RMSprop())
+```{r, eval=FALSE}
+model %>% compile(loss = "mse", optimizer = "adam", metrics = "mse")
 ```
 
-Finally the model can be fitted to the data. When doing so we additionally should specify the validation set (if we have one), the batch size, and the number of epochs, where an epoch is one forward pass and one backward pass of all the training examples, and the batch size is the number of training examples in one forward/backward pass. You may want to go and get a tea whilst this is running!
+Finally the model can be fitted to the data. When doing so we additionally should specify the validation set (if we have one), the batch size, and the number of epochs, where an epoch is one forward pass and one backward pass of all the training examples, and the batch size is the number of training examples in one forward/backward pass. Our complete code would then look like this:
 
 
 ```{r}
-set.seed(12345)
-keras_fit(mod, trainingX, trainingY, validation_data = list(testingX, testingY), batch_size = 100, epochs = 25, verbose = 1)
+model <- keras_model_sequential() %>% 
+  layer_flatten(input_shape = c(1)) %>% 
+  layer_dense(units = 100, activation = "relu") %>% 
+  layer_dense(units = 120, activation = "relu") %>% 
+  layer_dense(1, activation = "linear")
+
+model %>% compile(loss = "mse", optimizer = "adam", metrics = "mse")
+
+tensorflow::set_random_seed(42)
+model %>% fit(x = trainingX, y = trainingY, validation_data = list(testingX, testingY), epochs = 100, verbose = 2)
 ```
 
-We can see that the mean square error rapidly decreases (from approx. 39 at epoch 1 to around 1.7 at epoch 22). Let's visualise the data versus the real values.
+We can see that the mean square error rapidly decreases (from approx. 4 at epoch 1 to around 0.5 towards the end). As always, let's take a look at the actual results, rather than rely on summary metrics. To make predictions we can use the {predict} function:
 
 ```{r}
-newX <- as.matrix(seq(from = 0, to = 200, by = 5))
-
-predY <- keras_predict(mod, x = newX)
-
-plot(newX,predY)
-lines(newX,sqrt(newX))
+xstar <- seq(0,200,by=0.5)
+forecastY <- model %>% predict(xstar)
+plot(xstar,forecastY,'l')
+lines(xstar,sqrt(xstar),col="red")
 ```
 
-It's not particularly good. However, we didn't use a particularly large training set and there are a few things we can do to try to optimise the network. Another important point is that we didn't use the *best* network (the one with the best test set error). By default when we call prediction functions we tend to use whatever the final network was during our training. We will later learn how to save the best network, so that we can load it in for prediction. For now we will continue on.
+okay, so it's not particularly good. However, we didn't use a particularly large training set and there are a few things we can do to try to optimise the network. Another important point is that we didn't use the *best* network (the one with the best test set error). By default when we call prediction functions we tend to use whatever the final network was during our training. We can add this in to the code above, which would then look something like:
 
-Exercise 2.1: Try varying a few other things to get an idea of how NNs behave using keras. Try increasing the training set size, add or remove layers, and change their size. Another thing thing that can be varied is final layer activation. The [keras manual]{https://keras.io/api/layers/activations/} should provide a useful resource to explore what options are available.  
+```{r, eval=F}
+model <- keras_model_sequential() %>% 
+  layer_flatten(input_shape = c(1)) %>% 
+  layer_dense(units = 100, activation = "relu") %>% 
+  layer_dense(units = 120, activation = "relu") %>% 
+  layer_dense(1, activation = "linear")
+
+model %>% compile(loss = "mse", optimizer = "adam", metrics = "mse")
+
+cp_callback <- callback_model_checkpoint(filepath = 'data/RickandMorty/data/models/densemodel.h5', save_weights_only = FALSE, mode = "auto",  monitor = "val_mse", verbose = 0)
+
+
+tensorflow::set_random_seed(42)
+model %>% fit(x = trainingX, y = trainingY, validation_data = list(testingX, testingY), epochs = 100, verbose = 2,  callbacks = list(cp_callback))
+```
+
+The optimised model can be loaded in:
+
+```{r}
+model = load_model_hdf5('data/RickandMorty/data/models/densemodel.h5')
+
+
+xstar <- seq(0,200,by=0.5)
+forecastY <- model %>% predict(xstar)
+plot(xstar,forecastY,'l')
+lines(xstar,sqrt(xstar),col="red")
+```
+
+Exercise 2.1: Try varying a few other aspects of the network to get an idea of how NNs behave. For example, first try increasing the training set size. Try adding or removing layers, and varying layer widths. Another thing thing that can be varied is final layer activation. The [keras manual]{https://keras.io/api/layers/activations/} should provide a useful resource to explore what options are available.  
 
 ### Image classification with Rick and Morty
 
@@ -182,9 +245,6 @@ for (i in 1:length(files2)){
 Next we can construct a vector of length $5257$ containing the classification for each of the images e.g., a $0$ if the image is a *Rick* and $1$ if it is *not Rick*. This is simple enough using the function {rbind}, as we know the first $2211$ images were *Rick* and the second lot of images are *not Rick*. Since we are dealing with a classification algorithm, we next convert the data to binary categorical output (that is, a *Rick* is now represented as $[1, 0]$ and a *not Rick* is a $[0, 1]$), which we can do using the {to_categorical} conversion function:
 
 ```{r}
-#library(reticulate)
-#reticulate::use_python('/usr/bin/python3')
-#library(kerasR)
 labels <- rbind(matrix(0, length(files1), 1), matrix(1, length(files2), 1))
 allY <- to_categorical(labels, num_classes = 2)
 ```
@@ -196,7 +256,7 @@ We must now split our data in training sets, validation sets, and test sets. In 
 Although there are more elegant ways to shuffle data using {caret}, here we are going to manually randomly permute the data, and then take the first $4000$ permuted images for training, with the remainder for validation (Note: it's crucial to permute the $Y$ data in the same way).
 
 ```{r}
-set.seed(12345) #Set random number generator for the session
+set.seed(12345) #Set random number generator for R aspects of the session
 
 vecInd <- seq(0,length(files1)+length(files2)) #A vector of indexes
 trainInd <- sample(vecInd)[1:4001] #Permute and take first 4000 training
@@ -219,115 +279,88 @@ We are almost ready to begin building our neural networks. First can try a few t
 Let us return to our example of image classification. We start by specifying a sequential network as before.
 
 ```{r, eval=FALSE}
-mod <- Sequential()
+model <- keras_model_sequential() %>% 
 ```
 
-Our data is slightly different to the usual inputs we've been dealing with: that is, we're not dealing with an input vector, but instead have an array. In this case each image is a $90 \times 160 \time 3$ array. So for our first layer we first have to flatten this down using {Flatten()}:
+Our data is slightly different to the usual inputs we've been dealing with: that is, we're not dealing with an input vector, but instead have an array. In this case each image is a $90 \times 160 \time 3$ array. So for our first layer we first have to flatten this down using {flatten}:
 
 ```{r, eval=FALSE}
-mod$add(Flatten(input_shape = c(90, 160, 3)))
+model <- keras_model_sequential() %>% 
+  layer_flatten(input_shape = c(90,160,3))
 ```
 
-This should turn our $90 \times \160 \times 3$ input into a $1 \times 43200$ node input. We now add an intermediate layer containing $100$ neurons, connected to the input layer with rectified linear units ({relu}):
+This should turn our $90 \times \160 \times 3$ input into a $1 \times 43200$ node input. We now add intermediate layers connected to the input layer with rectified linear units ({relu}) as before.
 
 ```{r, eval=FALSE}
-mod$add(Activation("relu"))
-mod$add(Dense(100))
+model <- keras_model_sequential() %>% 
+  layer_flatten(input_shape = c(90,160,3)) %>% 
+  layer_dense(units = 100, activation = "relu") %>% 
+  layer_dense(units = 70, activation = "relu")
 ```
 
 Finally we connect this layer over the final output layer (two neurons) with sigmoid activation:
 [activation](https://keras.io/activations/)
 
 ```{r, eval=FALSE}
-mod$add(Activation("relu"))
-mod$add(Dense(1))
-mod$add(Activation("sigmoid"))
+layer_flatten(input_shape = c(NULL,90,160,3) , activation = 'relu' ) %>%
+layer_dense(units = 100)
 ```
 
 The complete model should look something like:
 
-```{r}
-mod <- Sequential()
-mod$add(Flatten(input_shape = c(90, 160, 3)))
-mod$add(Activation("relu"))
-mod$add(Dense(100))
-mod$add(Activation("relu"))
-mod$add(Dense(1))
-mod$add(Activation("sigmoid"))
+```{r, eval=FALSE}
+model <- keras_model_sequential() %>% 
+  layer_flatten(input_shape = c(90,160,3)) %>% 
+  layer_dense(units = 100, activation = "relu") %>% 
+  layer_dense(units = 70, activation = "relu") %>% 
+  layer_dense(1, activation = "sigmoid")
 ```
 
-We can visualise this model using the {plot_model} function (Figure \@ref(fig:examplenet)).
+We can print a summary of the network, for example to see how many parameters it has:
 
-```{r}
-plot_model(mod,'images/DNN1.png')
+```{r, eval=FALSE}
+summary(model)
 ```
 
-```{r examplenet, echo = F, fig.cap = 'Example of a multilayer convolutional neural network', fig.align = 'center', fig.show='hold', out.width = '50%'}
-knitr::include_graphics(c("images/DNN1.png"))
-```
-
-We can also print a summary of the network, for example to see how many parameters it has:
-
-```{r}
-mod
-```
-
-In this case we see a total of $4,320,201$ parameters. Yikes, that's a lot of parameters to tune, and not much data! 
+In this case we see a total of $4,327,241$ parameters. Yikes, that's a lot of parameters to tune, and not much data! 
 
 Next we need to compile and run the model. In this case we need to specify the loss, optimiser, and metrics. Since we are dealing with binary classification, we will use binary cross entropy (binary_crossentropy) and for classification, a good choice of metrics would be accuracy (or {binary_accuracy}). We can compile our model using {keras_compile}:
 
-```{r}
-keras_compile(mod,  loss = 'binary_crossentropy', metrics = c('binary_accuracy'), optimizer = RMSprop())
+```{r, eval=FALSE}
+model %>% compile(loss = "binary_crossentropy", optimizer = "adam", metrics = "binary_accuracy")
 ```
 
 Finally the model can be fitted to the data. When doing so we additionally need to specify the validation set (if we have one), the batch size and the number of epochs, where an epoch is one forward pass and one backward pass of all the training examples, and the batch size is the number of training examples in one forward/backward pass. You may want to go and get a tea whilst this is running!
 
-```{r}
+```{r, eval=FALSE}
 set.seed(12345)
-keras_fit(mod, trainX, trainY, validation_data = list(valX, valY), batch_size = 500, epochs = 25, verbose = 1)
+model %>% fit(x = trainX, y = trainY, validation_data = list(valX, valY), epochs = 25, verbose = 2)
 ```
 
-For this model we achieved an accuracy of above $0.57$ on the validation dataset at epoch $25$ (which had a corresponding accuracy $>0.58$ on the training set). Not great is an understatement. In fact, if we consider the slight imbalance in the number of classes, a niave algorithm that always assigns the data to *not Rick* would achieve an accuracy of $0.58$ and $0.57$ in the training and validation sets respectively. Another striking observation is that the accuracy itself doesn't appear to be changing much during training: a possible sign that something is amiss.
-
-Let's try adding in another layer to the network, just to see what happens. Before we do so, another important point to note is that the model we have at the end of training is the one one we generated for the latest epoch, which is not necessarily the model that gives us the best validation accuracy. Since our aim is to have the best predictive model we will also have to introduce a *callback*.
-
-In the snippet of code, below, we contruct a new network, with an additional layer containing $70$ neurons, and introduce a *callback* that returns the best model at the end of our training:
+Together with an added callback to save the best model, our code should look something like this:
 
 ```{r}
-mod <- Sequential()
-mod$add(Flatten(input_shape = c(90, 160, 3)))
-mod$add(Activation("relu"))
-mod$add(Dense(100))
-mod$add(Activation("relu"))
-mod$add(Dense(70))
-mod$add(Activation("relu"))
-mod$add(Dense(1))
-mod$add(Activation("sigmoid"))
+model <- keras_model_sequential() %>% 
+  layer_flatten(input_shape = c(90,160,3)) %>% 
+  layer_dense(units = 100, activation = "relu") %>% 
+  layer_dense(units = 70, activation = "relu") %>% 
+  layer_dense(1, activation = "sigmoid")
 
-callbacks <- list(ModelCheckpoint('data/RickandMorty/data/models/model.h5', monitor = "val_binary_accuracy", verbose = 0, save_best_only = TRUE, save_weights_only = FALSE, mode = "auto", period = 1))
+model %>% compile(loss = "binary_crossentropy", optimizer = "adam", metrics = "binary_accuracy")
 
-keras_compile(mod,  loss = 'binary_crossentropy', metrics = c('binary_accuracy'), optimizer = RMSprop())
+cp_callback <- callback_model_checkpoint(filepath = 'data/RickandMorty/data/models/model.h5',save_weights_only = FALSE, mode = "auto",  monitor = "val_binary_accuracy", verbose = 0)
 
-set.seed(12345)
-keras_fit(mod, trainX, trainY, validation_data = list(valX, valY), batch_size = 500, epochs = 25, callbacks = callbacks, verbose = 1)
+
+tensorflow::set_random_seed(42)
+model %>% fit(x = trainX, y = trainY, validation_data = list(valX, valY), epochs = 25, batch_size=100, verbose = 2, callbacks = list(cp_callback))
 ```
 
-We can again visualise the model:
-
+As before we can load a saved model in using the {load_model_hdf5} function:
 ```{r}
-plot_model(mod,'images/DNN2.png')
+model = load_model_hdf5('data/RickandMorty/data/models/model.h5')
 ```
 
-```{r examplenet2, echo = F, fig.cap = 'Example of a multilayer convolutional neural network', fig.align = 'center', fig.show='hold', out.width = '50%'}
-knitr::include_graphics(c("images/DNN2.png"))
-```
-
-Note that we can load a saved model in using the {keras_load} function:
-```{r}
-mod = keras_load('data/RickandMorty/data/models/model.h5')
-```
-
-However, the validation accuracy of this model is around $0.57$. It seems like we're getting nowhere fast, and need to change tactic. 
+For this model we achieved an accuracy of above $0.68$ on the validation dataset at epoch $18$ (which had a corresponding accuracy $>0.73$ on the training set). Not fantastic when you consider that given the slight imbalance in the number of images in each class, a niave algorithm that always assigns the data to *not Rick* would achieve an accuracy of $0.58$ and $0.57$ in the training and validation sets respectively. It seems like we're getting nowhere fast, and need to change tactic. 
 
 We need to think a little more about what the data actually *is*. In this case we're looking at a set of images. As Rick Sanchez can appear almost anywhere in the image, there's no reason to think that a given input node should correspond in two different images, so it's not surprising that the network did so badly, this is simply a task that a densely connected network is poor at. We need something that can extract out features from the image irregardless of where Rick is. There are approaches build precisely for image analysis that do just this: convolutional neural networks. 
 
@@ -339,47 +372,36 @@ Convolutional neural networks essentially scan through an image and extract out 
 knitr::include_graphics(c("images/Screen-Shot-2015-11-07-at-7.26.20-AM.png"))
 ```
 
-In kerasR we can add a convolutional layer using {Conv2D}. A multilayer convolutional neural network might look something like:
+In keras R we can add a convolutional layer using {layer_conv_2d} with a max pooling layer added via {layer_max_pooling_2d}. A multilayer convolutional neural network might look something like:
 
 ```{r}
-mod <- Sequential()
-mod$add(Conv2D(filters = 20, kernel_size = c(5, 5),input_shape = c(90, 160, 3)))
-mod$add(Activation("relu"))
-mod$add(MaxPooling2D(pool_size=c(3, 3)))
-mod$add(Conv2D(filters = 20, kernel_size = c(5, 5)))
-mod$add(Activation("relu"))
-mod$add(MaxPooling2D(pool_size=c(3, 3)))
-mod$add(Conv2D(filters = 64, kernel_size = c(5, 5)))
-mod$add(Activation("relu"))
-mod$add(MaxPooling2D(pool_size=c(3, 3)))
-mod$add(Flatten())
-mod$add(Dense(100))
-mod$add(Activation("relu"))
-mod$add(Dropout(0.3))
-mod$add(Dense(1))
-mod$add(Activation("sigmoid"))
+model <- keras_model_sequential() %>%
+  layer_conv_2d(input_shape = list(90,160,3), filters = 20, kernel_size = c(5,5)) %>%
+  layer_activation("relu") %>%
+  layer_max_pooling_2d(pool_size=c(2,2)) %>%
+  layer_conv_2d(filters = 20, kernel_size = c(5,5)) %>%
+  layer_activation("relu") %>%
+  layer_max_pooling_2d(pool_size=c(2,2)) %>%
+  layer_conv_2d(filters = 64, kernel_size = c(5,5)) %>%
+  layer_activation("relu") %>%
+  layer_max_pooling_2d(pool_size=c(2,2)) %>%
+  layer_flatten( ) %>%
+  layer_dense(units=100) %>%
+  layer_dropout(rate = 0.3) %>%
+  layer_dense(units=1, activation = "sigmoid")
 
-callbacks <- list(ModelCheckpoint('data/RickandMorty/data/models/convmodel.h5', monitor = "val_binary_accuracy", verbose = 0, save_best_only = TRUE, save_weights_only = FALSE, mode = "auto", period = 1))
+cp_callback <- callback_model_checkpoint(filepath = 'data/RickandMorty/data/models/modelCNN.h5',save_weights_only = FALSE, mode = "auto",  monitor = "val_binary_accuracy", verbose = 0)
 
-keras_compile(mod,  loss = 'binary_crossentropy', metrics = c('binary_accuracy'), optimizer = RMSprop())
-set.seed(12345)
-keras_fit(mod, trainX, trainY, validation_data = list(valX, valY), batch_size = 100, epochs = 25, callbacks = callbacks, verbose = 1)
+model %>% compile(loss = "binary_crossentropy", optimizer = "adam", metrics = "binary_accuracy")
+
+tensorflow::set_random_seed(42)
+model %>% fit(x = trainX, y = trainY, validation_data = list(valX, valY), epochs = 25, verbose = 2, callbacks = list(cp_callback))
 ```
 
-In the above, we have also included an additional callback, which plots the model performence as we progress. Again we can visualise this network:
+Okay, so now we have achieved a better accuracy: we have an accuracy of $0.8901$ on the validation dataset at epoch $18$, with a training accuracy of $0.987$. Whilst this is still not great (compared to how well a human could do on a similar task), it's accurate enough to begin making predictions and visualising the results. First load in the best model:
 
 ```{r}
-plot_model(mod,'images/DNN3.png')
-```
-
-```{r examplenet3, echo = F, fig.cap = 'Example of a multilayer convolutional neural network', fig.align = 'center', fig.show='hold', out.width = '50%'}
-knitr::include_graphics(c("images/DNN3.png"))
-```
-
-Okay, so now we have achieved a better accuracy: we have an accuracy of $0.91$ on the validation dataset at epoch $24$, with a training accuracy of $0.98$. Whilst this is still not great (compared to how well a human could do on a similar task), it's accurate enough to begin making predictions and visualising the results. First load in the best model:
-
-```{r}
-mod = keras_load('data/RickandMorty/data/models/convmodel.h5')
+model = load_model_hdf5('data/RickandMorty/data/models/modelCNN.h5')
 ```
 
 We can use this model to make predictions for images not present in either the training or validation datasets. We load in the new set of images, which can be found in the {predictions} subfolder:
@@ -393,11 +415,11 @@ for (i in 1:length(files)){
 }
 ```
 
-A hard classification can be assigned using the {keras_predict_classes} function, whilst the actual probability of assignment to either class can be evaluated using {keras_predict_proba} (this can be useful for images that might be ambiguous).
+A hard classification can be assigned using the {predict_classes} function, whilst the actual probability of assignment to either class can be evaluated using {predict} (this can be useful for images that might be ambiguous).
 
 ```{r}
-probY <- keras_predict_proba(mod, predictX)
-predictY <- keras_predict_classes(mod, predictX)
+probY <- model %>% predict(predictX)
+predictY <-as.numeric(probY>0.5)
 ```
 
 We can plot an example:
@@ -447,7 +469,7 @@ if (predictY[choice]==1) {
   grid.text(label='Rick',x = 0.4, y = 0.77,just = c("left", "top"), gp=gpar(fontsize=15, col="black"))
 } else {
   grid.raster(predictX[choice,1:90,1:160,1:3], interpolate=FALSE)
-  grid.text(label='Not Rick: must be a Jerry',x = 0.2, y = 0.77,just = c("left", "top"), gp=gpar(fontsize=15, col="yellow"))
+  grid.text(label='Not Rick: must be a Jerry',x = 0.2, y = 0.77,just = c("left", "top"), gp=gpar(fontsize=15, col="green"))
 }
 ```
 
@@ -456,8 +478,8 @@ if (predictY[choice]==1) {
 Although our model seems to be doing reasonably, it always helps to see where things are going wrong. Let's take a look at a few of the false positives and a few of the false negatives.
 
 ```{r}
-probvalY <- keras_predict_proba(mod, valX)
-predictvalY <- keras_predict_classes(mod, valX)
+probvalY <-  model %>%  predict(valX)
+predictvalY <-as.numeric(probvalY>0.5)
 
 TP <- which(predictvalY==1 & valY==1)
 FN <- which(predictvalY==0 & valY==1)
@@ -526,37 +548,44 @@ knitr::include_graphics(c("images/AE.png"))
 knitr::include_graphics(c("images/AE2.png"))
 ```
 
-In the example below we implement a simple Autoencoder:
+In the example below we implement a simple Autoencoder, constructed by stacking a number of convolution layers with a stak of deconvolution layers (foregoing the max pooling layers). Note that in, in R, each pixel is represented as a number between 1 and 0. A suitable final activation function is therefore one that scales between 0 and 1 e.g., a sigmoid function. Nevertheless, we are not doing logistic regrssion, so we will choose to monitor the mse. Note that this snippet of code will take a good few hours to run $25$ epochs.
 
 ```{r, eval=FALSE}
-mod <- Sequential()
-mod$add(Conv2D(filters = 20, kernel_size = c(5, 5),input_shape = c(90, 160, 3)))
-mod$add(Activation("relu"))
-mod$add(Conv2D(filters = 20, kernel_size = c(5, 5)))
-mod$add(Activation("relu"))
-mod$add(Conv2D(filters = 64, kernel_size = c(5, 5)))
-mod$add(Activation("relu"))
+model <- keras_model_sequential() %>%
+  layer_conv_2d(input_shape = list(90,160,3), filters = 20, kernel_size = c(5,5)) %>%
+  layer_activation("relu") %>%
+  layer_conv_2d(filters = 20, kernel_size = c(5,5)) %>%
+  layer_activation("relu") %>%
+  layer_conv_2d(filters = 64, kernel_size = c(5,5)) %>%
+  layer_activation("relu") %>%
+  layer_conv_2d_transpose(filters = 64, kernel_size = c(5,5)) %>%
+  layer_activation("relu") %>%
+  layer_conv_2d_transpose(filters = 20, kernel_size = c(5,5)) %>%
+  layer_activation("relu") %>%
+  layer_conv_2d_transpose(filters = 20, kernel_size = c(5,5)) %>%
+  layer_activation("relu") %>%
+  layer_conv_2d(filters = 3, kernel_size = c(5,5), padding = 'same') %>%
+  layer_activation("sigmoid")
 
-mod$add(Conv2DTranspose(filters = 64, kernel_size = c(5, 5)))
-mod$add(Activation("relu"))
-mod$add(Conv2DTranspose(filters = 20, kernel_size = c(5, 5)))
-mod$add(Activation("relu"))
-mod$add(Conv2DTranspose(filters = 20, kernel_size = c(5, 5)))
-mod$add(Activation("relu"))
-mod$add(Conv2D(filters = 3, kernel_size = c(5, 5), padding='same'))
-mod$add(Activation("sigmoid"))
+cp_callback <- callback_model_checkpoint(filepath = 'data/RickandMorty/data/models/modelAE.h5',save_weights_only = FALSE, mode = "auto",  monitor = "val_mse", verbose = 0)
 
-callbacks <- list(ModelCheckpoint('data/RickandMorty/data/models/AEmodel.h5', monitor = "val_binary_crossentropy", verbose = 0, save_best_only = TRUE, save_weights_only = FALSE, mode = "auto", period = 1))
+model %>% compile(loss = "binary_crossentropy", optimizer = "adam", metrics = "mse")
 
-keras_compile(mod,  loss = 'binary_crossentropy', metrics = c('binary_accuracy'), optimizer = RMSprop())
-set.seed(12345)
-keras_fit(mod, trainX, trainX, validation_data = list(valX, valX), batch_size = 500, epochs = 10, callbacks = callbacks, verbose = 1)
+tensorflow::set_random_seed(42)
+model %>% fit(x = trainX, y = trainX, validation_data = list(valX, valX), epochs = 25, verbose = 2, callbacks = list(cp_callback))
 ```
 
-For simplicity we have discarded the MaxPool layers. This condenses the images from $90 \times 160$ pixel images down to $78 \times 148$ (not a huge compression but enough to make our point). Let's plot a few of the examples to see how well we have done at condensing then reconstructing images on some of the test data:
+Instead of running this snippet again, we can load in a pre-run model.
 
 ```{r, eval=FALSE}
-predictAEX <- keras_predict(mod, predictX)
+model = load_model_hdf5('data/RickandMorty/data/models/modelAE.h5')
+summary(model)
+```
+
+We can see that this model condenses down the images from $90 \times 160$ pixel images down to $78 \times 148$ (not a huge compression, but a good starting point). Let's try compressing (and decompressing) a few of the held out examples:
+
+```{r, eval=FALSE}
+predictAEX <- model %>% predict(predictX)
 
 grid::grid.newpage()
 grid.raster(predictX[1,1:90,1:160,1:3], interpolate=FALSE, width = 0.3, x = 0.5, y=0.2)
@@ -575,22 +604,13 @@ grid.raster(predictX[3,1:90,1:160,1:3], interpolate=FALSE, width = 0.3, x = 0.5,
 grid.raster(predictAEX[3,1:90,1:160,1:3], interpolate=FALSE, width = 0.3, x = 0.5, y=0.5)
 ```
 
-In the example below we code up a simple autoencoder (note that run time is likely too long for use within this practical, hence evaluation has been set to false). 
-
-Exercise 2.2: Think about how the script can be modified to demonstrate the use of a denoisiny algorithm (hint: the dataset will need to be modified in some way).
+Exercise 2.2: Think about how the script can be modified to demonstrate the use of a denoisiny algorithm (hint: the dataset will need to be modified in some way, but the algorithm itself should be functional as is).
 
 ## Further reading
 
 A particularly comprehensive introduction to *Deep Learning* can be found in the e-book [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/chap3.html), written by Michael Nielsen.
 
-Useful examples can also be found in the [keras documentation](https://keras.io).
-
-[Installing Python Linux](http://docs.python-guide.org/en/latest/starting/install3/linux/)
-[Installing Python for Mac](http://docs.python-guide.org/en/latest/starting/install3/osx/)
-[Python install via Conda](https://conda.io/docs/user-guide/tasks/manage-python.html)
-
-[Installing Tensorflow](https://www.tensorflow.org/install/)
-[Installing Keras](https://keras.io/#installation)
+Useful examples can also be found in the [keras documentation](https://keras.io), with many more examples found in the keras [R wrapper documentation](https://keras.rstudio.com/index.html).
 
 =======
 ## Exercises

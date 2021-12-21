@@ -12,6 +12,7 @@ from keras.layers import Dense, Dropout, Flatten, Activation
 from keras.layers import Conv2D, MaxPooling2D
 from keras import backend as K
 
+#from keras.utils.vis_utils import plot_model
 from keras.utils import plot_model
 from keras.models import Model
 from keras.layers import Input

@@ -24,7 +24,7 @@
 <meta name="author" content="Chris Penfold" />
 
 
-<meta name="date" content="2021-11-29" />
+<meta name="date" content="2021-12-21" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -32,7 +32,7 @@
   
   
 <link rel="prev" href="index.html"/>
-<link rel="next" href="logistic-regression.html"/>
+<link rel="next" href="installation.html"/>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -50,72 +50,44 @@
 
 
 
-<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 
 
 <style type="text/css">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
 </style>
 
 </head>
@@ -140,31 +112,34 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="1.7" data-path="index.html"><a href="index.html#colophon"><i class="fa fa-check"></i><b>1.7</b> Colophon</a></li>
 </ul></li>
 <li class="chapter" data-level="2" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>2</b> Introduction</a></li>
-<li class="chapter" data-level="3" data-path="logistic-regression.html"><a href="logistic-regression.html"><i class="fa fa-check"></i><b>3</b> Linear regression and logistic regression</a><ul>
-<li class="chapter" data-level="3.1" data-path="logistic-regression.html"><a href="logistic-regression.html#regression"><i class="fa fa-check"></i><b>3.1</b> Regression</a><ul>
-<li class="chapter" data-level="3.1.1" data-path="logistic-regression.html"><a href="logistic-regression.html#linear-regression"><i class="fa fa-check"></i><b>3.1.1</b> Linear regression</a></li>
-<li class="chapter" data-level="3.1.2" data-path="logistic-regression.html"><a href="logistic-regression.html#polynomial-regression"><i class="fa fa-check"></i><b>3.1.2</b> Polynomial regression</a></li>
-<li class="chapter" data-level="3.1.3" data-path="logistic-regression.html"><a href="logistic-regression.html#distributions-of-fits"><i class="fa fa-check"></i><b>3.1.3</b> Distributions of fits</a></li>
-<li class="chapter" data-level="3.1.4" data-path="logistic-regression.html"><a href="logistic-regression.html#logistic-regression1"><i class="fa fa-check"></i><b>3.1.4</b> Logistic regression</a></li>
+<li class="chapter" data-level="3" data-path="installation.html"><a href="installation.html"><i class="fa fa-check"></i><b>3</b> Installation</a></li>
+<li class="chapter" data-level="4" data-path="logistic-regression.html"><a href="logistic-regression.html"><i class="fa fa-check"></i><b>4</b> Linear regression and logistic regression</a><ul>
+<li class="chapter" data-level="4.1" data-path="logistic-regression.html"><a href="logistic-regression.html#regression"><i class="fa fa-check"></i><b>4.1</b> Regression</a><ul>
+<li class="chapter" data-level="4.1.1" data-path="logistic-regression.html"><a href="logistic-regression.html#linear-regression"><i class="fa fa-check"></i><b>4.1.1</b> Linear regression</a></li>
+<li class="chapter" data-level="4.1.2" data-path="logistic-regression.html"><a href="logistic-regression.html#polynomial-regression"><i class="fa fa-check"></i><b>4.1.2</b> Polynomial regression</a></li>
+<li class="chapter" data-level="4.1.3" data-path="logistic-regression.html"><a href="logistic-regression.html#distributions-of-fits"><i class="fa fa-check"></i><b>4.1.3</b> Distributions of fits</a></li>
+<li class="chapter" data-level="4.1.4" data-path="logistic-regression.html"><a href="logistic-regression.html#logistic-regression1"><i class="fa fa-check"></i><b>4.1.4</b> Logistic regression</a></li>
 </ul></li>
-<li class="chapter" data-level="3.2" data-path="logistic-regression.html"><a href="logistic-regression.html#resources"><i class="fa fa-check"></i><b>3.2</b> Resources</a></li>
+<li class="chapter" data-level="4.2" data-path="logistic-regression.html"><a href="logistic-regression.html#resources"><i class="fa fa-check"></i><b>4.2</b> Resources</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="mlnn.html"><a href="mlnn.html"><i class="fa fa-check"></i><b>4</b> Deep Learning</a><ul>
-<li class="chapter" data-level="4.1" data-path="mlnn.html"><a href="mlnn.html#multilayer-neural-networks"><i class="fa fa-check"></i><b>4.1</b> Multilayer Neural Networks</a><ul>
-<li class="chapter" data-level="4.1.1" data-path="mlnn.html"><a href="mlnn.html#constructing-neural-networks-with-kerasr"><i class="fa fa-check"></i><b>4.1.1</b> Constructing Neural Networks with KerasR</a></li>
-<li class="chapter" data-level="4.1.2" data-path="mlnn.html"><a href="mlnn.html#image-classification-with-rick-and-morty"><i class="fa fa-check"></i><b>4.1.2</b> Image classification with Rick and Morty</a></li>
-<li class="chapter" data-level="4.1.3" data-path="mlnn.html"><a href="mlnn.html#rick-and-morty-classifier-using-deep-learning"><i class="fa fa-check"></i><b>4.1.3</b> Rick and Morty classifier using Deep Learning</a></li>
+<li class="chapter" data-level="5" data-path="mlnn.html"><a href="mlnn.html"><i class="fa fa-check"></i><b>5</b> Deep Learning</a><ul>
+<li class="chapter" data-level="5.1" data-path="mlnn.html"><a href="mlnn.html#multilayer-neural-networks"><i class="fa fa-check"></i><b>5.1</b> Multilayer Neural Networks</a><ul>
+<li class="chapter" data-level="5.1.1" data-path="mlnn.html"><a href="mlnn.html#installing-the-r-wrapper-for-keras"><i class="fa fa-check"></i><b>5.1.1</b> Installing the R wrapper for Keras</a></li>
+<li class="chapter" data-level="5.1.2" data-path="mlnn.html"><a href="mlnn.html#regression-with-keras"><i class="fa fa-check"></i><b>5.1.2</b> Regression with Keras</a></li>
+<li class="chapter" data-level="5.1.3" data-path="mlnn.html"><a href="mlnn.html#image-classification-with-rick-and-morty"><i class="fa fa-check"></i><b>5.1.3</b> Image classification with Rick and Morty</a></li>
+<li class="chapter" data-level="5.1.4" data-path="mlnn.html"><a href="mlnn.html#rick-and-morty-classifier-using-deep-learning"><i class="fa fa-check"></i><b>5.1.4</b> Rick and Morty classifier using Deep Learning</a></li>
 </ul></li>
-<li class="chapter" data-level="4.2" data-path="mlnn.html"><a href="mlnn.html#convolutional-neural-networks"><i class="fa fa-check"></i><b>4.2</b> Convolutional neural networks</a><ul>
-<li class="chapter" data-level="4.2.1" data-path="mlnn.html"><a href="mlnn.html#checking-the-models"><i class="fa fa-check"></i><b>4.2.1</b> Checking the models</a></li>
-<li class="chapter" data-level="4.2.2" data-path="mlnn.html"><a href="mlnn.html#data-augmentation"><i class="fa fa-check"></i><b>4.2.2</b> Data augmentation</a></li>
-<li class="chapter" data-level="4.2.3" data-path="mlnn.html"><a href="mlnn.html#asking-more-precise-questions"><i class="fa fa-check"></i><b>4.2.3</b> Asking more precise questions</a></li>
-<li class="chapter" data-level="4.2.4" data-path="mlnn.html"><a href="mlnn.html#more-complex-networks"><i class="fa fa-check"></i><b>4.2.4</b> More complex networks</a></li>
+<li class="chapter" data-level="5.2" data-path="mlnn.html"><a href="mlnn.html#convolutional-neural-networks"><i class="fa fa-check"></i><b>5.2</b> Convolutional neural networks</a><ul>
+<li class="chapter" data-level="5.2.1" data-path="mlnn.html"><a href="mlnn.html#checking-the-models"><i class="fa fa-check"></i><b>5.2.1</b> Checking the models</a></li>
+<li class="chapter" data-level="5.2.2" data-path="mlnn.html"><a href="mlnn.html#data-augmentation"><i class="fa fa-check"></i><b>5.2.2</b> Data augmentation</a></li>
+<li class="chapter" data-level="5.2.3" data-path="mlnn.html"><a href="mlnn.html#asking-more-precise-questions"><i class="fa fa-check"></i><b>5.2.3</b> Asking more precise questions</a></li>
+<li class="chapter" data-level="5.2.4" data-path="mlnn.html"><a href="mlnn.html#more-complex-networks"><i class="fa fa-check"></i><b>5.2.4</b> More complex networks</a></li>
+<li class="chapter" data-level="5.2.5" data-path="mlnn.html"><a href="mlnn.html#autoencoders"><i class="fa fa-check"></i><b>5.2.5</b> Autoencoders</a></li>
 </ul></li>
-<li class="chapter" data-level="4.3" data-path="mlnn.html"><a href="mlnn.html#further-reading"><i class="fa fa-check"></i><b>4.3</b> Further reading</a></li>
+<li class="chapter" data-level="5.3" data-path="mlnn.html"><a href="mlnn.html#further-reading"><i class="fa fa-check"></i><b>5.3</b> Further reading</a></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="solutions-logistic-regression.html"><a href="solutions-logistic-regression.html"><i class="fa fa-check"></i><b>5</b> Solutions to Chapter 4 - Linear regression and logistic regression</a></li>
-<li class="chapter" data-level="6" data-path="solutions-to-chapter-5-neural-networks.html"><a href="solutions-to-chapter-5-neural-networks.html"><i class="fa fa-check"></i><b>6</b> Solutions to Chapter 5 - Neural Networks</a></li>
+<li class="chapter" data-level="6" data-path="solutions-logistic-regression.html"><a href="solutions-logistic-regression.html"><i class="fa fa-check"></i><b>6</b> Solutions to Chapter 4 - Linear regression and logistic regression</a></li>
+<li class="chapter" data-level="7" data-path="solutions-to-chapter-5-neural-networks.html"><a href="solutions-to-chapter-5-neural-networks.html"><i class="fa fa-check"></i><b>7</b> Solutions to Chapter 5 - Neural Networks</a></li>
 </ul>
 
       </nav>
@@ -185,9 +160,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="intro" class="section level1">
 <h1><span class="header-section-number">2</span> Introduction</h1>
 <p>In this workbook, we cover two themes.</p>
-<p>We begin in chapter <a href="logistic-regression.html#logistic-regression">3</a> with linear regression and logistic regression. Here we will explore how to use these statistical methods in the context of machine learning. The excercises are based on a plant infection dataset. We will see how regression models of different complexity can be fit to the dataset, and how held out data can be used to choose the best model. After this, we will see how logistic regression approaches can be used to pick out marker genes that indicate infected status.</p>
-<p>In chapter <a href="mlnn.html#mlnn">4</a> we introduce the concepts of neural networks. We demonstrate how neural networks can be built using the {kerasR} package for regression applications. Later we introduce Convolutional Neural Networks (CNN) and see how they can be used for image recognition applications. In this chapter we attempt to build an algorithm capable of recognising a well known cartoon characer in a se of images. Finally, we briefly discuss how these basic approaches can be built into more complex algorithms.</p>
-
+<p>We begin in chapter <a href="logistic-regression.html#logistic-regression">4</a> with linear regression and logistic regression. Here we will explore how to use these statistical methods in the context of machine learning. The excercises are based on a plant infection dataset. We will see how regression models of different complexity can be fit to the dataset, and how held out data can be used to choose the best model. After this, we will see how logistic regression approaches can be used to pick out marker genes that indicate infected status.</p>
+<p>In chapter <a href="mlnn.html#mlnn">5</a> we introduce the concepts of neural networks. We demonstrate how neural networks can be built using the {kerasR} package for regression applications. Later we introduce Convolutional Neural Networks (CNN) and see how they can be used for image recognition applications. In this chapter we attempt to build an algorithm capable of recognising a well known cartoon characer in a se of images. Finally, we briefly discuss how these basic approaches can be built into more complex algorithms.</p>
 </div>
             </section>
 
@@ -195,7 +169,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         </div>
       </div>
 <a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="logistic-regression.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="installation.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -250,7 +224,7 @@ gitbook.start({
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    var src = "true";
+    var src = "";
     if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
     if (location.protocol !== "file:")
       if (/^https?:/.test(src))
