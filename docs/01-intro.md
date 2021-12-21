@@ -48,7 +48,7 @@ You can be even more specific by selecting a version of tensorflow:
 python3.9 -m pip install tensorflow==2.7.0
 ```
 
-Tensorflow 2.2.0 is the version I have installed on my machine. Keras has already been incorporated into the most recent versions of tensorflow, and so it may not be necesary to install a seperate version of keras. For debugging purposes I did not install keras. You can check things have installed within Python by launching a python instance and loading the packages:
+Tensorflow 2.7.0 is the version I have installed on my machine. Keras has already been incorporated into the most recent versions of tensorflow, and so it may not be necesary to install a seperate version of keras. For debugging purposes I did not install keras. You can check things have installed within Python by launching a python instance and loading the packages:
 
 
 ```r
